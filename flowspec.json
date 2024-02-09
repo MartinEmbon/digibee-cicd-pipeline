@@ -1,0 +1,14 @@
+{
+  "start": [
+    {
+      "type": "connector",
+      "name": "log-connector",
+      "stepName": "Log",
+      "params": {
+        "logLevel": "INFO",
+        "message": "payload {{ message.$ }}"
+      },
+      "id": "d15f855e-0612-4a51-b7a5-96f318140a67"
+    }
+  ]
+}
