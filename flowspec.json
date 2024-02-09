@@ -1,14 +1,377 @@
 {
   "start": [
     {
+      "type": "choice",
+      "stepName": "Choice",
+      "when": [
+        {
+          "target": "Recebeu cpf",
+          "jsonPath": "$.[?(@.queryAndPath.cpf)]"
+        }
+      ],
+      "otherwise": "Não recebeu cpf ",
+      "onProcessTrack": null,
+      "onExceptionTrack": null,
+      "id": "222703c8-90f4-47e3-b220-24a4cc6eb94f"
+    }
+  ],
+  "Recebeu cpf": [
+    {
       "type": "connector",
       "name": "log-connector",
-      "stepName": "Log",
+      "stepName": "Log - Recebeu cpf",
       "params": {
         "logLevel": "INFO",
-        "message": "payload {{ message.$ }}"
+        "message": "{{ message.queryAndPath.$ }}"
       },
-      "id": "d15f855e-0612-4a51-b7a5-96f318140a67"
+      "onProcessTrack": null,
+      "onExceptionTrack": null,
+      "id": "0f4d84fe-adb9-43d6-829c-e742c369b44f"
+    },
+    {
+      "params": {
+        "waitNextRetry": 5000,
+        "advanced": true,
+        "disableConnectionPool": false,
+        "compressBody": false,
+        "stopOnServerError": false,
+        "maxRetry": 3,
+        "sendBinaryFile": false,
+        "isInsecure": false,
+        "headers": "{\"Content-Type\":\"application/json\",\"user\":\"admin\",\"password\":\"1234\",\"apikey\":\"UPWAuAjc88UY9HwHKmojA3j7tSls6f7a\"}",
+        "operation": "GET",
+        "fileName": "",
+        "retry": true,
+        "responseCharset": "UTF-8",
+        "rawMode": false,
+        "readTimeout": 30000,
+        "invalidateSSLSessionsOnEveryCall": false,
+        "rawModeAsBase64": false,
+        "queryParams": "{\"cpf\":\"{{ message.queryAndPath.cpf }}\"}",
+        "url": "https://test.godigibee.io/pipeline/digibee/v2/enablement-simulation-hr",
+        "connectTimeout": 30000,
+        "saveAsLocalFile": false,
+        "stopOnClientError": false,
+        "forceHttp1": false,
+        "overrideResponseCharset": true
+      },
+      "accountLabel": "",
+      "name": "rest-connector-v2",
+      "accountLabels": {
+        "custom-1": "",
+        "custom-2": ""
+      },
+      "stepName": "get HR",
+      "type": "connector",
+      "onExceptionTrack": null,
+      "onProcessTrack": null,
+      "id": "bea90e1f-8032-4240-97a9-49f37974b43f"
+    },
+    {
+      "type": "choice",
+      "stepName": "Choice",
+      "when": [
+        {
+          "target": "Retornou dados #diNToa#",
+          "jsonPath": "$.[?(@.body.status == \"success\")]"
+        }
+      ],
+      "otherwise": "Não retornou dados #0vfM8t#",
+      "onProcessTrack": null,
+      "onExceptionTrack": null,
+      "id": "0f545249-a53c-46a1-9fa2-868142947121"
+    }
+  ],
+  "Retornou dados #diNToa#": [
+    {
+      "type": "connector",
+      "name": "log-connector",
+      "stepName": "Log - Retornou dados",
+      "params": {
+        "logLevel": "INFO",
+        "message": "{{ message.$ }}"
+      },
+      "onProcessTrack": null,
+      "onExceptionTrack": null,
+      "id": "b3fca435-12f7-4d0c-9dc1-036403d2b15b"
+    },
+    {
+      "name": "json-generator-connector",
+      "type": "connector",
+      "stepName": "agrupa pessoa",
+      "params": {
+        "json": "{\n    \"pessoa\": {{ message.body.data[0] }}\n}",
+        "failOnError": false
+      },
+      "onProcessTrack": null,
+      "onExceptionTrack": null,
+      "id": "e38b4a95-3dc3-4014-a67b-5131eaeaca23"
+    },
+    {
+      "operation": "PUT",
+      "scoped": false,
+      "sessionType": "LOCAL",
+      "stepName": "put pessoa",
+      "fields": [
+        "pessoa"
+      ],
+      "type": "session-management",
+      "onExceptionTrack": null,
+      "onProcessTrack": null,
+      "id": "a8dcc711-6f2a-4f60-a356-64771245cfa2"
+    },
+    {
+      "params": {
+        "advanced": false,
+        "disableConnectionPool": false,
+        "compressBody": false,
+        "stopOnServerError": false,
+        "maxRetry": 0,
+        "sendBinaryFile": false,
+        "isInsecure": false,
+        "headers": "{\"Content-Type\":\"application/json\",\"apikey\":\"xKxW9qbZNZst3eRczn2r5d6i1lzsgREL\"}",
+        "operation": "GET",
+        "fileName": "",
+        "retry": false,
+        "responseCharset": "UTF-8",
+        "rawMode": false,
+        "readTimeout": 30000,
+        "invalidateSSLSessionsOnEveryCall": false,
+        "rawModeAsBase64": false,
+        "queryParams": "{\"cep\":\"{{ message.pessoa.zipCode }}\"}",
+        "url": "https://api.godigibee.io/pipeline/enablement/v1/api-de-enderecos",
+        "connectTimeout": 30000,
+        "saveAsLocalFile": false,
+        "stopOnClientError": false,
+        "forceHttp1": false,
+        "overrideResponseCharset": true
+      },
+      "accountLabel": "",
+      "name": "rest-connector-v2",
+      "accountLabels": {
+        "custom-1": "",
+        "custom-2": ""
+      },
+      "stepName": "api de endereços",
+      "type": "connector",
+      "onExceptionTrack": null,
+      "onProcessTrack": null,
+      "id": "041e3998-45d9-4ef0-ba31-4a9d54cc9dfb"
+    },
+    {
+      "type": "choice",
+      "stepName": "Choice",
+      "when": [
+        {
+          "target": "Erro na consulta ao viaCep #3r7LC9#",
+          "jsonPath": "$.[?(@.error || @.body.erro)]"
+        }
+      ],
+      "otherwise": "Sucesso na consulta ao viaCep #7MJGHp#",
+      "onProcessTrack": null,
+      "onExceptionTrack": null,
+      "id": "550e68c8-3b3c-4e27-af6b-85be4f703f11"
+    }
+  ],
+  "Erro na consulta ao viaCep #3r7LC9#": [
+    {
+      "type": "connector",
+      "name": "log-connector",
+      "stepName": "Log - erro na consulta ao viaCep",
+      "params": {
+        "logLevel": "ERROR",
+        "message": "{{ message.$ }}"
+      },
+      "onProcessTrack": null,
+      "onExceptionTrack": null,
+      "id": "e033a285-9f57-4b94-a7f5-3c588ab2ebab"
+    }
+  ],
+  "Sucesso na consulta ao viaCep #7MJGHp#": [
+    {
+      "type": "connector",
+      "name": "log-connector",
+      "stepName": "Log - Sucesso viaCep",
+      "params": {
+        "logLevel": "INFO",
+        "message": "{{ message.$ }}"
+      },
+      "onProcessTrack": null,
+      "onExceptionTrack": null,
+      "id": "7bb06b85-f81e-4bef-aba3-5277de30630a"
+    },
+    {
+      "operation": "GET",
+      "scoped": false,
+      "sessionType": "LOCAL",
+      "stepName": "get pessoa",
+      "fields": [
+        "pessoa"
+      ],
+      "type": "session-management",
+      "onExceptionTrack": null,
+      "onProcessTrack": null,
+      "id": "14286141-60c4-4e47-9328-5cf7ba32a05d"
+    },
+    {
+      "name": "json-generator-connector",
+      "type": "connector",
+      "stepName": "De / Para",
+      "params": {
+        "json": "{\r\n    \"nomePai\": {{ message.pessoa.fatherName }},\r\n    \"pais\": {{ message.pessoa.country }},\r\n    \"cep\": {{ REPLACE(message.pessoa.zipCode, \"[^0-9]\", \"\") }},\r\n    \"cpf\": {{ REPLACE(message.pessoa.identityDoc, \"[^0-9]\", \"\") }},\r\n    \"cidade\": {{ message.pessoa.city }},\r\n    \"nomeMae\": {{ message.pessoa.motherName }},\r\n    \"nascimento\": {{ message.pessoa.birthDate }},\r\n    \"logradouro\": {{ CONCAT(message.pessoa.streetName, \", \", message.pessoa.number) }},\r\n    \"idCargo\": {{ IF( EQUALTO( message.pessoa.positionId, \"1\" ), 25, IF( EQUALTO( message.pessoa.positionId, \"2\" ), 30, IF( EQUALTO( message.pessoa.positionId, \"3\" ), 40, \"erro\")))  }},\r\n    \"integracaoBD\": {{ message.pessoa.erpIntegration }},\r\n    \"nome\": {{ UPPERCASE(message.pessoa.name) }},\r\n    \"id\": {{ message.pessoa.id }},\r\n    \"nomeCargo\": {{ message.pessoa.position }}\r\n}",
+        "failOnError": false
+      },
+      "onProcessTrack": null,
+      "onExceptionTrack": null,
+      "id": "fb3805f7-d087-4b53-bf39-598771d07a45"
+    },
+    {
+      "params": {
+        "advanced": false,
+        "keepConnection": true,
+        "rollbackOnError": false,
+        "operation": "QUERY",
+        "clobAsFile": false,
+        "failOnError": false,
+        "blobAsFile": false,
+        "typeProperties": "[]",
+        "sql": "INSERT INTO enb_rh (id, nome, cpf, nascimento, pais, cidade, cep, logradouro, nomeCargo, idCargo, nomeMae, nomePai, integracaoDB) values ({{ message.id }}, {{ message.nome }}, {{ message.cpf }}, {{ message.nascimento }}, {{ message.pais }}, {{ message.cidade }}, {{ message.cep }},  {{ message.logradouro }}, {{ message.nomeCargo }}, {{ message.idCargo }}, {{ message.nomeMae }}, {{ message.nomePai }}, {{ message.integracaoBD }});",
+        "url": "{{global.enablement-db-url}}",
+        "connectionProperties": "{}",
+        "columnFromLabel": false,
+        "exclusiveDbPool": false,
+        "connectionTestQuery": "",
+        "batch": false,
+        "dbPoolByActualConsumers": false
+      },
+      "accountLabel": "mysql-2",
+      "name": "db-connector-v2",
+      "stepName": "Insere no banco de dados",
+      "type": "connector",
+      "onExceptionTrack": null,
+      "onProcessTrack": null,
+      "id": "db434b18-e000-48f6-998d-7649a80d8106"
+    },
+    {
+      "type": "choice",
+      "stepName": "Choice",
+      "when": [
+        {
+          "target": "Sucesso ao inserir pessoa no banco de dados",
+          "jsonPath": "$.[?(@.updateCount == 1)]"
+        }
+      ],
+      "otherwise": "Erro ao inserir pessoa no banco de dados ",
+      "onProcessTrack": null,
+      "onExceptionTrack": null,
+      "id": "8f4be1b3-cc3c-4504-a17c-8c44214ef2f2"
+    }
+  ],
+  "Erro ao inserir pessoa no banco de dados ": [
+    {
+      "type": "connector",
+      "name": "log-connector",
+      "stepName": "Log - erro ao inserir no banco",
+      "params": {
+        "logLevel": "ERROR",
+        "message": "{{ message.$ }}"
+      },
+      "onProcessTrack": null,
+      "onExceptionTrack": null,
+      "id": "979502ff-bc7d-4614-a29c-2d5ee3da678f"
+    },
+    {
+      "type": "connector",
+      "name": "throw-error-connector",
+      "stepName": "Erro ao inserir registro no banco de dados",
+      "params": {
+        "customErrorEnabled": true,
+        "customError": "{\n    \"code\": 500,\n    \"error\": \"erro ao inserir pessoa no banco de dados\",\n    \"status\": \"error\",\n    \"mensagem\": \"erro ao inserir pessoa no banco de dados\"\n}",
+        "failOnError": true
+      },
+      "onProcessTrack": null,
+      "onExceptionTrack": null,
+      "id": "e31bba78-c2cf-4603-837e-62dc0984343f"
+    }
+  ],
+  "Sucesso ao inserir pessoa no banco de dados": [
+    {
+      "type": "connector",
+      "name": "log-connector",
+      "stepName": "Log - Sucesso ao inserir no banco",
+      "params": {
+        "logLevel": "INFO",
+        "message": "{{ message.$ }}"
+      },
+      "onProcessTrack": null,
+      "onExceptionTrack": null,
+      "id": "07102d01-3678-462e-8b2f-87cbe75d1ce5"
+    },
+    {
+      "name": "json-generator-connector",
+      "type": "connector",
+      "stepName": "Retorna sucesso",
+      "params": {
+        "json": "{\n    \"status\": \"success\",\n    \"mensagem\": \"pessoa inserida com sucesso\"\n}",
+        "failOnError": false
+      },
+      "onProcessTrack": null,
+      "onExceptionTrack": null,
+      "id": "0c8580b6-bc65-46d5-a09b-f7a0a0576973"
+    }
+  ],
+  "Não retornou dados #0vfM8t#": [
+    {
+      "type": "connector",
+      "name": "log-connector",
+      "stepName": "Log - Não retornou dados",
+      "params": {
+        "logLevel": "ERROR",
+        "message": "{{ message.$ }}"
+      },
+      "onProcessTrack": null,
+      "onExceptionTrack": null,
+      "id": "45e72601-0e1a-4901-84cc-88fc95ff37d3"
+    },
+    {
+      "type": "connector",
+      "name": "throw-error-connector",
+      "stepName": "Erro Sistema RH",
+      "params": {
+        "customErrorEnabled": true,
+        "customError": "{\n    \"code\": 500,\n    \"error\": \"Erro ao fazer requisição ao Sistema RH\",\n    \"status\": \"error\",\n    \"mensagem\": \"Erro ao fazer requisição ao Sistema RH\"\n}",
+        "failOnError": true
+      },
+      "onProcessTrack": null,
+      "onExceptionTrack": null,
+      "id": "f99d3f77-2172-4063-a4e9-97a0640e82a2"
+    }
+  ],
+  "Não recebeu cpf ": [
+    {
+      "type": "connector",
+      "name": "log-connector",
+      "stepName": "Log - Não Recebeu cpf",
+      "params": {
+        "logLevel": "ERROR",
+        "message": "{{ message.$ }}"
+      },
+      "onProcessTrack": null,
+      "onExceptionTrack": null,
+      "id": "66290dd6-110a-4ecb-a8ea-65a2d10168e2"
+    },
+    {
+      "type": "connector",
+      "name": "throw-error-connector",
+      "stepName": "CPF inválido",
+      "params": {
+        "customErrorEnabled": true,
+        "customError": "{\r\n  \"status\":\"error\",\r\n  \"mensagem\": \"CPF inválido\",\r\n  \"code\": 404,\r\n  \"error\": \"CPF inválido\"\r\n}",
+        "failOnError": true
+      },
+      "onProcessTrack": null,
+      "onExceptionTrack": null,
+      "id": "2a90c8e9-a440-4599-9b1a-2e5b8f647a66"
     }
   ]
 }
